@@ -1,0 +1,38 @@
+[package]
+name = "trader"
+version = "0.1.0"
+edition = "2018"
+authors = ["Fabian Bösiger <boesiger.fabian@outlook.com>"]
+
+[dependencies]
+ftx = { path = "../ftx" }
+sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-rustls", "decimal", "tls", "chrono" ] }
+plotters = { version = "0.3", optional = true }
+
+rust_decimal = { version = "1.10", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+num-traits = "0.2"
+num-derive = "0.3"
+
+# Async
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# Logging
+dotenv = "0.15"
+pretty_env_logger = "0.4"
+log = "0.4"
+
+# Serialization
+serde = "1.0"
+bincode = "1.3"
+serde-pickle = "0.6"
+
+[dev-dependencies]
+rand = "0.8"
+
+[features]
+live = []
+backtest = ["plotters"]
