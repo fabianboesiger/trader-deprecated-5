@@ -30,8 +30,8 @@ impl<T> CoinVec<T> {
 
 #[derive(Debug, Clone, Copy, FromPrimitive, PartialEq, Eq, Hash)]
 pub enum Coin {
-    ETH = 0,
-    BTC = 1,
+    BTC = 0,
+    ETH = 1,
     DOGE = 2,
     BNB = 3,
     XRP = 4,
@@ -62,5 +62,16 @@ impl Coin {
 impl fmt::Display for Coin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}-PERP", self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test() {
+        assert!(Coin::from_usize(Coin::all().len() - 1).is_some());
+        assert!(Coin::from_usize(Coin::all().len()).is_none());
     }
 }

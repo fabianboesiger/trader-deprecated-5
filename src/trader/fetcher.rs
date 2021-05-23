@@ -5,6 +5,8 @@ use futures::future::join_all;
 use std::collections::VecDeque;
 use tokio::time::sleep;
 
+pub type Prices = ftx::rest::Prices;
+
 pub struct Buf {
     coin: Coin,
     interval: Duration,
@@ -97,7 +99,7 @@ impl<'a> Fetcher<'a> {
     }
 
     #[cfg(not(feature = "backtest"))]
-    pub async fn next(&mut self, rest: &Rest) -> Option<Vec<Price>> {
+    pub async fn next(&mut self, rest: &Rest) -> Option<Prices> {
         let mut vec: Vec<Price> = Vec::new();
 
         let mut futures = Vec::new();
@@ -125,6 +127,7 @@ impl<'a> Fetcher<'a> {
 mod tests {
     use super::*;
     use std::env::var;
+    use chrono::TimeZone;
 
     #[tokio::test]
     async fn test_start_time() {

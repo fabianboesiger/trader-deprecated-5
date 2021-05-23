@@ -2203,6 +2203,7 @@ dependencies = [
  "log",
  "num-derive",
  "num-traits",
+ "once_cell",
  "plotters",
  "pretty_env_logger",
  "rand",
