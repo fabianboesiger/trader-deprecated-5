@@ -1,6 +1,6 @@
-use super::{Prices, Position, Coin};
+use super::{Candles, Coin, Position};
 use crate::{
-    indicators::{Corr, Stdev, Cum, Change, Ma},
+    indicators::{Change, Corr, Cum, Ma, Stdev},
     Number,
 };
 use rust_decimal::prelude::*;
@@ -18,7 +18,7 @@ impl Pair {
         Pair {
             corr: Corr::new(corr_period),
             stdev: Stdev::new(corr_period),
-            count: corr_period,
+            count: corr_period * 2,
             out_diff: 0.0,
             out_enter: false,
         }
@@ -27,19 +27,19 @@ impl Pair {
     pub fn run(&mut self, long: &Single, short: &Single) {
         let corr = self.corr.run(long.get_cum(), short.get_cum());
         self.out_diff = short.get_mov() - long.get_mov();
-        let stdev = self.stdev.run(self.out_diff);
+        let stdev = self.stdev.run(self.out_diff.abs());
 
         let max_diff = 0.1;
-        let min_diff = 0.01;
+        let min_diff = 0.05;
 
         if self.count > 0 {
+            // Backoff from trading for some time.
             self.count -= 1;
         } else {
-            self.out_enter =
-                corr > 0.95 &&
-                self.out_diff > stdev * 2.5 &&
-                max_diff >= self.out_diff &&
-                self.out_diff >= min_diff;
+            self.out_enter = corr > 0.95
+                && self.out_diff > stdev * 2.5
+                && max_diff >= self.out_diff
+                && self.out_diff >= min_diff;
         }
     }
 
@@ -97,27 +97,24 @@ impl Strategy {
     pub fn new(coins: &[Coin]) -> Self {
         let mut singles = Vec::new();
         for &coin in coins {
-            singles.push(Single::new(coin, 60 * 60 * 10 / 15))
+            singles.push(Single::new(coin, 60 * 60 * 24 * 3 / 15))
         }
 
         let mut pairs = Vec::new();
         for _ in coins {
             let mut p = Vec::new();
             for _ in coins {
-                p.push(Pair::new(60 * 60 * 24 * 5 / 15))
+                p.push(Pair::new(60 * 60 * 24 * 14 / 15))
             }
             pairs.push(p);
         }
 
-        Strategy {
-            singles,
-            pairs,
-        }
+        Strategy { singles, pairs }
     }
 
-    pub fn run(&mut self, prices: &Prices) -> Option<Position> {
+    pub fn run(&mut self, prices: &Candles) -> Option<Position> {
         let prices_float: Vec<Number> = prices.iter().map(|d| d.close.to_f32().unwrap()).collect();
-        
+
         for (single, close) in self.singles.iter_mut().zip(prices_float) {
             single.run(close);
         }
@@ -131,7 +128,7 @@ impl Strategy {
                         long.coin,
                         short.coin,
                         Decimal::from_f32(pair.get_diff()).unwrap(),
-                    ))
+                    ));
                 }
             }
         }

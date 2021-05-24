@@ -1,35 +1,35 @@
 mod coin;
 mod fetcher;
+mod investor;
 mod position;
 mod strategy;
-mod investor;
 mod wallet;
 
 use chrono::{DateTime, Duration, Utc};
-use ftx::rest::Rest;
-use std::env::var;
 pub use coin::*;
 pub use fetcher::*;
-pub use position::*;
-pub use strategy::*;
+use ftx::rest::Rest;
 pub use investor::*;
+pub use position::*;
+use std::env::var;
+pub use strategy::*;
 pub use wallet::*;
 
-pub struct Trader<'a> {
-    fetcher: Fetcher<'a>,
+pub struct Trader {
+    fetcher: Fetcher,
     strategy: Strategy,
     investor: Investor,
     rest: Rest,
 }
 
-impl<'a> Trader<'a> {
-    pub fn new(coins: &'a [Coin], from: DateTime<Utc>, interval: Duration) -> Self {
+impl Trader {
+    pub fn new(coins: &[Coin], from: DateTime<Utc>, interval: Duration) -> Self {
         dotenv::dotenv().ok();
         let subaccount = Some(var("SUBACCOUNT").unwrap());
         let key = var("API_KEY").unwrap();
         let secret = var("API_SECRET").unwrap();
         let rest = Rest::new(key.clone(), secret.clone(), subaccount.clone());
-        
+
         Trader {
             fetcher: Fetcher::new(coins, from, interval),
             strategy: Strategy::new(coins),
@@ -45,5 +45,17 @@ impl<'a> Trader<'a> {
                 self.investor.close(&prices).await;
             }
         }
+
+        log::info!(
+            "TOTAL PROFIT: \t{:.2}",
+            self.investor.total_realized_profit()
+        );
+        let (wins, losses) = self.investor.wins_losses();
+        log::info!(
+            "WIN/LOSS:     \t{}/{} ({:.2}%)",
+            wins,
+            losses,
+            wins as f32 / (wins + losses) as f32 * 100.0
+        );
     }
 }

@@ -9,7 +9,7 @@ cargo test
 ### Backtesting
 
 ```
-cargo run features=backtest
+cargo run --features=backtest
 ```
 
 ### Live Trading

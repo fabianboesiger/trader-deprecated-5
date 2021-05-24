@@ -1,11 +1,7 @@
-pub struct Logger {
-
-}
+pub struct Logger {}
 
 impl Logger {
     pub fn new() -> Self {
-        Logger {
-            
-        }
+        Logger {}
     }
 }
