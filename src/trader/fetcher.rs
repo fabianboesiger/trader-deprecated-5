@@ -90,8 +90,8 @@ impl Buf {
                 if price.start_time < self.curr {
                     continue;
                 } else if price.start_time == self.curr {
-                    self.buf.push_back(price.into());
                     self.curr = price.start_time + self.interval;
+                    self.buf.push_back(price.into());
                 } else {
                     // Backfill until next data.
                     log::warn!(
@@ -112,8 +112,8 @@ impl Buf {
 
                     // Insert next known data.
                     assert_eq!(price.start_time, self.curr);
-                    self.buf.push_back(price.into());
                     self.curr = price.start_time + self.interval;
+                    self.buf.push_back(price.into());
                 }
                 if let Some(&candle) = self.buf.back() {
                     self.last = Some(candle);
